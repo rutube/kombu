@@ -4,7 +4,7 @@ import pickle
 
 from kombu import Connection, Exchange, Producer, Queue, binding
 from kombu.exceptions import NotBoundError
-
+from kombu.serialization import registry
 from .case import Case, Mock, call
 from .mocks import Transport
 
@@ -359,6 +359,13 @@ class test_Queue(Case):
         q = Queue('foo', self.exchange, 'rk')
         d = q.as_dict(recurse=True)
         self.assertEqual(d['exchange']['name'], self.exchange.name)
+
+    def test_dump_bindings(self):
+        b = binding(self.exchange, 'rk')
+        q = Queue('foo', self.exchange, 'rk', bindings=[b])
+        d = q.as_dict(recurse=True)
+        self.assertEqual(d['bindings'][0]['exchange']['name'], self.exchange.name)
+        registry.dumps(d)
 
     def test__repr__(self):
         b = Queue('foo', self.exchange, 'foo')
